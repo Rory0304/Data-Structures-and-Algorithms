@@ -65,11 +65,17 @@ public class Poly {
      * @return degree of polynomial
      */
     public int degree() {
-    	int degree = 0;
-    	for(int i=0;i<terms.length;i++) {
-    		degree += terms[i].exp;
-    	}
     	
+    	//조건이 있는지는 모르겠음
+    	
+    	int degree;
+    	int max = 0;
+    	for(int i=0;i<this.getTermCount();i++) {
+    		if(max < this.terms[i].exp) {
+    			max = this.terms[i].exp;
+    		}
+    	}
+    	degree = max;
     	return degree;
 //    	return terms[next].exp;
         // your code goes here
@@ -114,15 +120,67 @@ public class Poly {
      * @return a new polynomial (`other` + `this`)
      */
     public Poly add(Poly other) {
-    	int len = getTermCount();
+    	//x^2 + x^3 + x^4
+    	//x^6 
+    	//length기준으로 배열을 만들면 안되는 이유.. 
+    	
+
+    	int len = other.terms.length + this.terms.length; 
     	Term[] new_term = new Term [len];
-    	for(int i=0;i<len;i++) {
-    		for(int j=0;j<len;j++) {
-    			if(terms[i].exp == other.terms[j].exp) {
-    				new_term[i] = new Term(terms[i].coef + other.terms[j].coef , i);
-    			}
-    		}
+
+    	for(int x=0;x<len;x++) {
+    		new_term[x] = new Term(0,0);
     	}
+    	
+    	for(int i=0;i<len;i++) {
+    		for(int j = 0;j<this.getTermCount();j++) {
+    			if(i == this.terms[j].exp) {
+    				new_term[i].coef += this.terms[j].coef;
+    				new_term[i].exp = i;
+    				
+        		}
+    		}
+    		for(int z = 0;z<other.getTermCount();z++) {
+    			if(i == other.terms[z].exp) {
+    				new_term[i].coef += other.terms[z].coef;
+    				new_term[i].exp = i;
+        		}
+    		}
+    		
+    	}
+    	
+    	
+    	
+    	
+    	//len을 비교해줄 필요가 있는가!
+    	
+//    	int len1 = getTermCount();
+//    	int len2 = other.terms.length;
+//    	int max_len, min_len;
+//    	if(len1 < len2) {
+//    		max_len = len2; min_len = len1;
+//    		Term[] new_term = new Term [max_len];
+//    		for(int i=0;i<min_len;i++) {
+//        		for(int j=0;j<max_len;j++) {
+//        			if(terms[i].exp == other.terms[j].exp) {
+//        				new_term[j] = new Term(terms[i].coef + other.terms[j].coef , terms[i].exp);
+//        			}
+//        		}
+//        	}
+//    	}
+//    	else{
+//    		max_len = len1; min_len = len2;
+//    		Term[] new_term = new Term [max_len];
+//    		for(int i=0;i<min_len;i++) {
+//        		for(int j=0;j<max_len;j++) {
+//        			if(terms[i].exp == other.terms[j].exp) {
+//        				new_term[j] = new Term(terms[i].coef + other.terms[j].coef , terms[i].exp);
+//        			}
+//        		}
+//        		
+//        		
+//        	}
+//    	}
         // you code goes here
     	//public Poly(int termCount, Term... terms) 
     	return new Poly(len, new_term);
@@ -137,18 +195,24 @@ public class Poly {
      * @return a new polynomial (`other` * `this`)
      */
     public Poly mult(Poly other) {
-    	int len = getTermCount();
-    	Term[] new_term = new Term [len];
-    	for(int i=0;i<len;i++) {
-    		for(int j=0;j<len;j++) {
-    			if(terms[i].exp == other.terms[j].exp) {
-    				new_term[i] = new Term(terms[i].coef * other.terms[j].coef , i);
-    			}
+    	int len1 = terms.length;
+    	int len2 = other.terms.length;
+    	int max_len, min_len;
+    	if(len1 < len2); max_len = len2; min_len = len1;
+    	max_len = len1; min_len = len2;
+    	//대소 비교 해주어야 함. int len = if(len1 < len2) return; 
+    	
+    	Term[] new_term = new Term [len1 * len2]; //최대의 개수는 얼마일까요....
+    	for(int i=0;i<max_len;i++) {
+    		for(int j=0;j<min_len;j++) {
+    			new_term[i] = new Term(terms[i].coef * other.terms[j].coef , terms[i].exp );
     		}
     	}
         // you code goes here
-    	//public Poly(int termCount, Term... terms) 
-    	return new Poly(len, new_term);
+    	
+    
+    	return 
+    			
         // you code goes here
     }
 
@@ -160,6 +224,7 @@ public class Poly {
         Arrays.sort(terms, 0, next, (a, b) -> b.exp - a.exp);
         return Arrays.stream(terms)
                      .filter(i -> i != null)
+                     .filter(i -> i.coef != 0)
                      .map(i -> i.toString())
                      .collect(Collectors.joining(" + "));
     }
@@ -175,15 +240,15 @@ public class Poly {
 
         Poly poly2 = new Poly(4);
         poly2.addTerm(2,1);
-        poly2.addTerm(1,0);
-        poly2.addTerm(3,2);
+//        poly2.addTerm(0,0);
+//        poly2.addTerm(3,2);
         poly2.addTerm(4,3);
         System.out.println(poly2);
 
         Poly poly3 = poly1.add(poly2);
         System.out.println(poly3);
 
-        Poly poly4 = poly1.mult(poly2);
-        System.out.println(poly4);
+//        Poly poly4 = poly1.mult(poly2);
+//        System.out.println(poly4);
     }
 }
