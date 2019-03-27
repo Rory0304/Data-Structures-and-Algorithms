@@ -47,7 +47,7 @@ public class Poly {
 	 * @param terms     array of terms to be added.
 	 */
 
-	// 새로운 방정식을 만듦. 더해진 항들의 방정식이 변수.
+	// 새로운 방정식을 만듦. 더해지거나 곱해진 항들의 방정식이 변수.
 	public Poly(int termCount, Term... terms) {
 		this(termCount);
 
@@ -66,7 +66,7 @@ public class Poly {
 	 */
 	public int degree() {
 
-		// 조건이 있는지는 모르겠음
+		// 차수 조건이 있는지는 모르겠음
 
 		int degree;
 		int max = 0;
@@ -77,7 +77,6 @@ public class Poly {
 		}
 		degree = max;
 		return degree;
-//    	return terms[next].exp;
 		// your code goes here
 	}
 
@@ -106,11 +105,13 @@ public class Poly {
 	public void addTerm(int coef, int exponent) {
 
 		int n = getTermCount();
-		terms[n] = new Term(coef, exponent);
-		next++;
-
+		if (coef != 0) {
+			// 계수가 0이 아니면 항 추가
+			terms[n] = new Term(coef, exponent);
+			next++;
+		}
 	}
-	// 예외사항 : 텀의 개수가 4개 이상이면.
+
 	// you code goes here
 
 	/**
@@ -123,11 +124,10 @@ public class Poly {
 	 * @return a new polynomial (`other` + `this`)
 	 */
 	public Poly add(Poly other) {
-		// x^2 + x^3 + x^4
-		// x^6
-		// length기준으로 배열을 만들면 안되는 이유..
+		// x^2 + x^3 + x^4 + x^6 -> 두개의 항의 차수가 모두 다를 경우
+		// max_length기준으로 배열을 만들면 안되는 이유..
 
-		int len = other.getTermCount()+ this.getTermCount();
+		int len = other.getTermCount() + this.getTermCount();
 		Term[] new_term = new Term[len];
 
 		for (int x = 0; x < len; x++) {
@@ -139,7 +139,6 @@ public class Poly {
 				if (i == this.terms[j].exp) {
 					new_term[i].coef += this.terms[j].coef;
 					new_term[i].exp = i;
-
 				}
 			}
 			for (int z = 0; z < other.getTermCount(); z++) {
@@ -184,7 +183,6 @@ public class Poly {
 		// public Poly(int termCount, Term... terms)
 		return new Poly(len, new_term);
 	}
-	
 
 	/**
 	 * Multiply the target polynomial object with the one given as a parameter. As a
@@ -196,24 +194,24 @@ public class Poly {
 	 * @return a new polynomial (`other` * `this`)
 	 */
 	public Poly mult(Poly other) {
-		// 최대의 길이 -> 겹치는 항이 없는 경우 -> n+m
-		
+		// 최대의 길이 -> 겹치는 항이 없는 경우 -> n+m 까지의 항 생성
+
 		int len1 = this.getTermCount();
 		int len2 = other.getTermCount();
-		int len = len1 + len2;
+		int len = len1 + len2 + 1;
 		Term[] new_term = new Term[len];
-		
+
 		for (int x = 0; x < len; x++) {
 			new_term[x] = new Term(0, 0);
 		}
-		
-		for(int i=0;i<len1;i++) {
-			for(int j=0;j<len2;j++) {
+
+		for (int i = 0; i < len1; i++) {
+			for (int j = 0; j < len2; j++) {
 //				new_term[i+j+1].coef += this.terms[i].coef * other.terms[j].coef;
 //				new_term[i+j+1].exp = this.terms[i].exp + other.terms[j].exp;
 				int new_exp = this.terms[i].exp + other.terms[j].exp;
-				new_term[new_exp-1].coef += this.terms[i].coef * other.terms[j].coef;
-				new_term[new_exp-1].exp = this.terms[i].exp + other.terms[j].exp;
+				new_term[new_exp].coef += this.terms[i].coef * other.terms[j].coef;
+				new_term[new_exp].exp = new_exp;
 			}
 		}
 
@@ -228,29 +226,47 @@ public class Poly {
 	public String toString() {
 		// Sample code ... you can freely modify this code if necessary
 		Arrays.sort(terms, 0, next, (a, b) -> b.exp - a.exp);
-		return Arrays.stream(terms).filter(i -> i != null).filter(i -> i.coef != 0).map(i -> i.toString())
-				.collect(Collectors.joining(" + "));
+		return Arrays.stream(terms).filter(i -> i != null).map(i -> i.toString()).collect(Collectors.joining(" + "));
 	}
+//	.filter(i -> i.coef != 0)
 
 	public static void main(String... args) {
+
 		Poly poly1 = new Poly(4);
 		poly1.addTerm(1, 3);
 		poly1.addTerm(2, 2);
 		poly1.addTerm(3, 1);
 		poly1.addTerm(4, 0);
-		System.out.println(poly1);
 
 		Poly poly2 = new Poly(4);
 		poly2.addTerm(2, 1);
-//        poly2.addTerm(0,0);
-//        poly2.addTerm(3,2);
+		poly2.addTerm(1, 0);
 		poly2.addTerm(4, 3);
-		System.out.println(poly2);
 
-		Poly poly3 = poly1.add(poly2);
+		Poly poly3 = poly1.mult(poly2);
 		System.out.println(poly3);
+//
+//	        assertEquals("4x^6 + 8x^5 + 14x^4 + 21x^3 + 8x^2 + 11x^1 + 4x^0", poly3.toString());
+//	        assertEquals(6, poly3.degree());
+//	        assertEquals(7, poly3.getTermCount());
 
-		Poly poly4 = poly1.mult(poly2);
-		System.out.println(poly4);
+		Poly poly4 = new Poly(4);
+		poly4.addTerm(1, 3);
+		poly4.addTerm(2, 2);
+		poly4.addTerm(3, 1);
+		poly4.addTerm(4, 0);
+		System.out.println(poly1);
+
+		Poly poly5 = new Poly(4);
+		poly5.addTerm(2, 1);
+		poly5.addTerm(4, 3);
+		System.out.println(poly5);
+
+		Poly poly6 = poly4.add(poly5);
+		System.out.println(poly6);
+
+		Poly poly7 = poly4.mult(poly5);
+		System.out.println(poly7);
+
 	}
 }
